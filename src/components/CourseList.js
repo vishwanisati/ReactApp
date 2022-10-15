@@ -18,4 +18,5 @@ const CourseList = ({courses, selection, selected, toggleSelected}) => {
         )} 
     </div>
 }
+
 export default CourseList;
