@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { initializeApp } from "firebase/app";
 import { getDatabase, onValue, ref, update } from 'firebase/database';
+import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyBPIDixsTSMmDc0Xj5pGyPaktITP9BJFAk",
@@ -11,15 +13,12 @@ const firebaseConfig = {
     appId: "1:170227884338:web:2cadd6115c34cb6712372b",
     measurementId: "G-2NRXT70FQG"
   };
-
 // Initialize Firebase
 const firebase = initializeApp(firebaseConfig);
 const database = getDatabase(firebase);
-
 export const useDbData = (path) => {
   const [data, setData] = useState();
   const [error, setError] = useState(null);
-
   useEffect(() => (
     onValue(ref(database, path), (snapshot) => {
      setData( snapshot.val() );
@@ -27,15 +26,19 @@ export const useDbData = (path) => {
       setError(error);
     })
   ), [ path ]);
-
   return [ data, error ];
 };
-
 const makeResult = (error) => {
   const timestamp = Date.now();
   const message = error?.message || `Updated: ${new Date(timestamp).toLocaleString()}`;
   return { timestamp, error, message };
 };
+
+export const signInWithGoogle = () => {
+  signInWithPopup(getAuth(firebase), new GoogleAuthProvider());
+};
+
+const firebaseSignOut = () => signOut(getAuth(firebase));
 
 export const useDbUpdate = (path) => {
   const [result, setResult] = useState();
@@ -46,4 +49,16 @@ export const useDbUpdate = (path) => {
   }, [database, path]);
 
   return [updateData, result];
+};
+
+export { firebaseSignOut as signOut };
+
+export const useAuthState = () => {
+  const [user, setUser] = useState();
+
+  useEffect(() => (
+    onAuthStateChanged(getAuth(firebase), setUser)
+  ));
+
+  return [user];
 };
